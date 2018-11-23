@@ -1,0 +1,399 @@
+Id,OwnerUserId,CreationDate,Score,Title,Body
+77434,14008,2008-09-16T21:40:29Z,171,How to access the last value in a vector?,"<p>Suppose I have a vector that is nested in a dataframe one or two levels.  Is there a quick and dirty way to access the last value, without using the <code>length()</code> function?  Something ala PERL's <code>$#</code> special var?</p>
+
+<p>So I would like something like:</p>
+
+<pre><code>dat$vec1$vec2[$#]
+</code></pre>
+
+<p>instead of</p>
+
+<pre><code>dat$vec1$vec2[length(dat$vec1$vec2)]
+</code></pre>
+"
+79709,NA,2008-09-17T03:39:16Z,3,Worse sin: side effects or passing massive objects?,"<p>I have a function inside a loop inside a function. The inner function acquires and stores a large vector of data in memory (as a global variable... I'm using ""R"" which is like ""S-Plus""). The loop loops through a long list of data to be acquired. The outer function starts the process and passes in the list of datasets to be acquired.</p>
+
+<pre><code>for (dataset in list_of_datasets) {
+  for (datachunk in dataset) {
+    &lt;process datachunk&gt;
+    &lt;store result? as vector? where?&gt;
+  }
+}
+</code></pre>
+
+<p>I programmed the inner function to store each dataset before moving to the next, so all the work of the outer function occurs as side effects on global variables... a big no-no. Is this better or worse than collecting and returning a giant, memory-hogging vector of vectors? Is there a superior third approach?</p>
+
+<p>Would the answer change if I were storing the data vectors in a database rather than in memory? Ideally, I'd like to be able to terminate the function (or have it fail due to network timeouts) without losing all the information processed prior to termination.</p>
+"
+95007,15842,2008-09-18T17:59:19Z,56,Explain the quantile() function in R,"<p>I've been mystified by the R quantile function all day.  </p>
+
+<p>I have an intuitive notion of how quantiles work, and an M.S. in stats, but boy oh boy, the documentation for it is confusing to me.  </p>
+
+<p>From the docs:</p>
+
+<blockquote>
+  <p>Q[i](p) = (1 - gamma) x[j] + gamma
+  x[j+1],</p>
+</blockquote>
+
+<p>I'm with it so far.  For a type <em>i</em> quantile, it's an interpolation between x[j] and x [j+1], based on some mysterious constant <em>gamma</em></p>
+
+<blockquote>
+  <p>where 1 &lt;= i &lt;= 9, (j-m)/n &lt;= p &lt;
+  (j-m+1)/ n, x[j] is the jth order
+  statistic, n is the sample size, and m
+  is a constant determined by the sample
+  quantile type. Here gamma depends on
+  the fractional part of g = np+m-j. </p>
+</blockquote>
+
+<p>So, how calculate j?   m?</p>
+
+<blockquote>
+  <p>For the continuous sample quantile
+  types (4 through 9), the sample
+  quantiles can be obtained by linear
+  interpolation between the kth order
+  statistic and p(k): </p>
+  
+  <p>p(k) = (k - alpha) / (n - alpha - beta
+  + 1),
+  where α and β are constants determined
+  by the type. Further, m = alpha + p(1
+  - alpha - beta), and gamma = g.</p>
+</blockquote>
+
+<p>Now I'm really lost.  p, which was a constant before, is now apparently a function.  </p>
+
+<p>So for Type 7 quantiles, the default...</p>
+
+<blockquote>
+  <p>Type 7</p>
+  
+  <p>p(k) = (k - 1) / (n - 1). In this case, p(k) = mode[F(x[k])]. This is used by S. </p>
+</blockquote>
+
+<p>Anyone want to help me out?  In particular I'm confused by the notation of p being a function and a constant, what the heck <em>m</em> is, and now to calculate j for some particular <em>p</em>.  </p>
+
+<p>I hope that based on the answers here, we can submit some revised documentation that better explains what is going on here.  </p>
+
+<p><a href=""https://svn.r-project.org/R/trunk/src/library/stats/R/quantile.R"" rel=""noreferrer"">quantile.R source code</a>
+or type:  quantile.default</p>
+"
+103312,NA,2008-09-19T16:09:26Z,4,How to test for the EOF flag in R?,"<p>How can I test for the <code>EOF</code> flag in R? </p>
+
+<p>For example:</p>
+
+<pre><code>f &lt;- file(fname, ""rb"")
+while (???) {
+    a &lt;- readBin(f, ""int"", n=1)
+}
+</code></pre>
+"
+255697,1941213,2008-11-01T15:48:30Z,4,Is there an R package for learning a Dirichlet prior from counts data,"<p>I'm looking for a an <code>R</code> package which can be used to train a Dirichlet prior from counts data.  I'm asking for a colleague who's using <code>R</code>, and don't use it myself, so I'm not too sure how to look for packages.  It's a bit hard to search for, because ""R"" is such a nonspecific search string.  There doesn't seem to be anything on <a href=""http://cran.r-project.org/web/packages/index.html"" rel=""nofollow noreferrer"">CRAN</a>, but are there any other places to look?</p>
+"
+359438,2173,2008-12-11T14:02:06Z,4,Optimization packages for R,"<p>Does anyone know of any optimization packages out there for R (similar to NUOPT for S+)?</p>
+"
+439526,37751,2009-01-13T15:58:48Z,23,Thinking in Vectors with R,"<p>I know that R works most efficiently with vectors and looping should be avoided. I am having a hard time teaching myself to actually write code this way. I would like some ideas on how to 'vectorize' my code. Here's an example of creating 10 years of sample data for 10,000 non unique combinations of state (<code>st</code>), plan1 (<code>p1</code>) and plan2 (<code>p2</code>):</p>
+
+<pre><code>st&lt;-NULL
+p1&lt;-NULL
+p2&lt;-NULL
+year&lt;-NULL
+i&lt;-0
+starttime &lt;- Sys.time()
+
+while (i&lt;10000) {
+    for (years in seq(1991,2000)) {
+        st&lt;-c(st,sample(c(12,17,24),1,prob=c(20,30,50)))
+        p1&lt;-c(p1,sample(c(12,17,24),1,prob=c(20,30,50)))
+        p2&lt;-c(p2,sample(c(12,17,24),1,prob=c(20,30,50)))    
+        year &lt;-c(year,years)
+    }
+        i&lt;-i+1
+}
+Sys.time() - starttime
+</code></pre>
+
+<p>This takes about 8 minutes to run on my laptop. I end up with 4 vectors, each with 100,000 values, as expected. How can I do this faster using vector functions?</p>
+
+<p>As a side note, if I limit the above code to 1000 loops on i it only takes 2 seconds, but 10,000 takes 8 minutes. Any idea why?</p>
+"
+445059,37751,2009-01-14T23:09:02Z,12,Vectorize my thinking: Vector Operations in R,"<p>So earlier I answered my own question on thinking in vectors in R. But now I have another problem which I can't 'vectorize.' I know vectors are faster and loops slower, but I can't figure out how to do this in a vector method:</p>
+
+<p>I have a data frame (which for sentimental reasons I like to call my.data) which I want to do a full marginal analysis on. I need to remove certain elements one at a time and 'value' the data frame then I need to do the iterating again by removing only the next element. Then do again... and again... The idea is to do a full marginal analysis on a subset of my data. Anyhow, I can't conceive of how to do this in a vector efficient way. </p>
+
+<p>I've shortened the looping part of the code down and it looks something like this:</p>
+
+<pre><code>for (j in my.data$item[my.data$fixed==0]) { # &lt;-- selects the items I want to loop 
+                                            #     through
+    my.data.it &lt;- my.data[my.data$item!= j,] # &lt;-- this kicks item j out of the list
+    sum.data &lt;-aggregate(my.data.it, by=list(year), FUN=sum, na.rm=TRUE) #&lt;-- do an
+                                                                         # aggregation
+
+    do(a.little.dance) &amp;&amp; make(a.little.love) -&gt; get.down(tonight) # &lt;-- a little
+                                                                   #  song and dance
+
+    delta &lt;- (get.love)                                         # &lt;-- get some love
+    delta.list&lt;-append(delta.list, delta, after=length(delta.list)) #&lt;-- put my love
+                                                                    #    in a vector 
+}
+</code></pre>
+
+<p>So obviously I hacked out a bunch of stuff in the middle, just to make it less clumsy. The goal would be to remove the j loop using something more vector efficient. Any ideas?</p>
+"
+467110,11301,2009-01-21T21:33:13Z,5,Is R a compiled language?,"<p>I can't find it anywhere on the web (and I don't want to install it). Is the <a href=""http://en.wikipedia.org/wiki/R_(programming_language)"" rel=""nofollow noreferrer"">R language</a> a compiled language? How fast does it run a pre-written script? Does it do any kind of compilation, or just execute instructions line by line?</p>
+"
+476726,277,2009-01-24T21:56:23Z,10,Filtering data in R,"<p>I have a CSV of file of data that I can load in R using <code>read.csv()</code></p>
+
+<p>Some of the data is missing, so I want to reduce the data frame down to set that consists entirely of non-missing data, i.e. if a <code>NULL</code> appears anywhere, I want to exclude that column and row from the filtered data set.</p>
+
+<p>I know I can probably do this fairly simply with the inbuilt R vector operations, but I am not quite sure how to do this exactly?</p>
+
+<p>To make my question a little more concrete, here is a quick sample of the data so you can see what I want to do.</p>
+
+<pre><code>DocID       Anno1    Anno7  Anno8
+1           7        NULL   8
+2           8        NULL   3
+44          10       2      3
+45          6        6      6
+46          1        3      4
+49          3        8      5
+62          4        NULL   9
+63          2        NULL   4
+67          11       NULL   3
+91          NULL     9      7
+92          NULL     7      5
+93          NULL     8      8
+</code></pre>
+
+<p>So given this input, I need some code that will reduce the output to this.</p>
+
+<pre><code>DocID       Anno8
+44          3
+45          6
+46          4
+49          5
+</code></pre>
+
+<p>As <code>Anno8</code> is the only column with non-NULL data, and there are only four rows with non-NULL data.</p>
+"
+495744,12677,2009-01-30T14:48:19Z,2,Operating with time intervals like 08:00-08:15,"<p>I would like to import a time-series where the first field indicates a period:</p>
+
+<pre><code>08:00-08:15
+08:15-08:30
+08:30-08:45
+</code></pre>
+
+<p>Does R have any features to do this neatly?</p>
+
+<p>Thanks!</p>
+
+<hr>
+
+<p><strong>Update:</strong></p>
+
+<p>The most promising solution I found, as suggested by Godeke was the cron package and using substring() to extract the start of the interval.</p>
+
+<p>I'm still working on related issues, so I'll update with the solution when I get there.</p>
+"
+498932,445,2009-01-31T14:50:28Z,3,What's the easiest way to install 100s of files in a Visual Studio setup project,"<p>I have a standard c# application that acts as a GUI front end for a an ""R"" statistics engine. ""R"" consists of approx 600 files in approx 50 different folders and can be ""installed"" on a machine through xcopy deployment.</p>
+
+<p>I would like to package up both the R engine and my c# gui into one setup.exe so that the user doesn't need to go and install R first and then my c# application seperately.</p>
+
+<p>I know that I can produce a setup project and then add in the R files one by one but adding all 600 files will be very tedious!</p>
+
+<p>Is there an easier way of doing what I want? Can I add the single R folder and automatically add the subfolders and files to save me adding them in one by one? Or maybe do an unzip procedure in my setup project which will unzip the R engine in one go?</p>
+"
+509595,12677,2009-02-04T00:23:09Z,2,csv file with multiple time-series,"<p>I've imported a csv file with lots of columns and sections of data.</p>
+
+<pre><code>v &lt;- read.csv2(""200109.csv"", header=TRUE, sep="","", skip=""6"", na.strings=c(""""))
+</code></pre>
+
+<p>The layout of the file is something like this:</p>
+
+<pre><code>Dataset1
+time, data, .....
+0       0
+0       &lt;NA&gt;
+0       0
+
+Dataset2
+time, data, .....
+00:00   0
+0       &lt;NA&gt;
+0       0
+</code></pre>
+
+<p>(The headers of the different datasets is exactly the same.</p>
+
+<p>Now, I can plot the first dataset with:</p>
+
+<pre><code>plot(as.numeric(as.character(v$Calls.served.by.agent[1:30])), type=""l"")
+</code></pre>
+
+<p>I am curious if there is a better way to:</p>
+
+<ol>
+<li><p>Get all the numbers read as numbers, without having to convert.</p></li>
+<li><p>Address the different datasets in the file, in some meaningfull way.</p></li>
+</ol>
+
+<p>Any hints would be appreciated. Thank you.</p>
+
+<hr>
+
+<p>Status update:</p>
+
+<p>I haven't really found a good solution yet in R, but I've started writing a script in Lua to seperate each individual time-series into a seperate file. I'm leaving this open for now, because I'm curious how well R will deal with all these files. I'll get 8 files per day.</p>
+"
+520810,63372,2009-02-06T15:49:48Z,20,Does R have quote-like operators like Perl's qw()?,"<p>Anyone know if R has quote-like operators like Perl's <code>qw()</code> for generating character vectors? </p>
+"
+551113,2056,2009-02-15T16:05:33Z,3,Writing a GUI for the BRCAPRO Cancer Gene Risk Calculation Engine,"<p>I think this is a completely unique question on Stack Overflow.  First some background:</p>
+
+<p>I've been asked to write a new GUI on top of a calculation engine called BRCAPRO (brack-a-pro).  BRCAPRO implements a Mendelian computational model based on a piece of software called BayesMendel.  BRCAPRO calculation are used by doctors and surgeons specializing in cancer treatment to show patients:</p>
+
+<ul>
+<li>The probability of being diagnosed with cancer based on their genetics and family history.</li>
+<li>The change in life expectancy based on different forms of treatment and/or the age at which these treatments are started.</li>
+</ul>
+
+<p>I've done enough research to know that the BRCAPRO formulas are far too complicated to reasonably implement in my own code.</p>
+
+<p>There is an existing well-known (to cancer doctors) software package called CancerGene: <a href=""http://www8.utsouthwestern.edu/utsw/cda/dept47829/files/65844.html"" rel=""nofollow noreferrer"">http://www8.utsouthwestern.edu/utsw/cda/dept47829/files/65844.html</a>.  This program is very old, runs on Windows 95 and includes calculating engines for several forms of cancer my client does not work with.  Ideally my client would like his application to run on the web so that he can share information with other doctors easily.</p>
+
+<p>My task is take the CancerGene application, which is built on the BRCAPRO engine, and:</p>
+
+<ol>
+<li>Duplicate 90% of its functionality</li>
+<li>Remove unnecessary functionality</li>
+<li>Modify the output of reports</li>
+<li>If possible, make it web-based</li>
+</ol>
+
+<p>Now my question:</p>
+
+<p>Does anybody have any idea how to code against BRCAPRO?  I have Googled for two days and found no API documentation or development information of any kind.  Wikipedia says that the BayesMendel modeling software is written in R, but I don't have any idea what BRCAPRO is written in.  I know absolutely nothing about R.  </p>
+
+<p>To be clear, I don't need to modify the behavior or calculating engine of BRCAPRO.  I just need to know how to feed it input so that it returns numbers to me.</p>
+
+<p>--  Edit to add more information --</p>
+
+<p>I downloaded the CancerGene application in the above link and installed it.  There was a small amount of documentation, including the data format that BRCAPRO expects to receive.  Without getting into an unnecessary level of detail, BRCAPRO expects matrix-formatted data where each column represents a genetic trait and each row represents a family member.  Now I just need to know how to pass this matrix to the BRCAPRO engine once I collect it from my Web/Windows form.</p>
+
+<p>Here's hoping there are a couple of doctor/developers here on Stack Overflow!</p>
+
+<p>KN</p>
+"
+560329,67405,2009-02-18T09:08:38Z,2,Sort the X axis in a barplot,"<p>I have binned data that looks like this:</p>
+
+<pre><code>  (8.048,18.05] (-21.95,-11.95] (-31.95,-21.95]   (18.05,28.05] (-41.95,-31.95]
+             81              76              18              18             12
+    (-132,-122]     (-122,-112]     (-112,-102]     (-162,-152]  (-102,-91.95]
+              6               6               6               5              5
+(-91.95,-81.95]     (-192,-182]   (28.05,38.05]   (38.05,48.05]  (58.05,68.05]
+              5               4               4               4              4
+  (78.05,88.05]     (98.05,108]     (-562,-552]     (-512,-502]    (-482,-472]
+              4               4               3               3              3
+    (-452,-442]     (-412,-402]     (-282,-272]     (-152,-142]  (48.05,58.05]
+              3               3               3               3              3
+  (68.05,78.05]       (118,128]       (128,138]     (-582,-572]    (-552,-542]
+              3               3               3               2              2
+    (-532,-522]     (-422,-412]     (-392,-382]     (-362,-352]    (-262,-252]
+              2               2               2               2              2
+    (-252,-242]     (-142,-132] (-81.95,-71.95]       (148,158]  (-1402,-1392]
+              2               2               2               2              1
+  (-1372,-1362]   (-1342,-1332]     (-942,-932]     (-862,-852]    (-822,-812]
+              1               1               1               1              1
+    (-712,-702]     (-682,-672]     (-672,-662]     (-632,-622]    (-542,-532]
+              1               1               1               1              1
+    (-502,-492]     (-492,-482]     (-472,-462]     (-462,-452]    (-442,-432]
+              1               1               1               1              1
+    (-432,-422]     (-352,-342]     (-332,-322]     (-312,-302]    (-302,-292]
+              1               1               1               1              1
+    (-202,-192]     (-182,-172]     (-172,-162] (-51.95,-41.95]  (88.05,98.05]
+              1               1               1               1              1
+      (108,118]       (158,168]       (168,178]       (178,188]      (298,308]
+              1               1               1               1              1
+      (318,328]       (328,338]       (338,348]       (368,378]      (458,468]
+              1               1               1               1              1
+</code></pre>
+
+<p>How can I plot this data so that the bin is sorted from most negative on the left to most positive on the right? Currently my graph looks <a href=""http://docs.google.com/Doc?id=dcvdrfrh_5cm5qkchw"" rel=""nofollow noreferrer"">like this</a>.  Notice that it is not sorted at all.  In particular the second bar (<code>value = 76</code>) is placed to the right of the first:</p>
+
+<pre><code> (8.048,18.05] (-21.95,-11.95]
+            81              76
+</code></pre>
+
+<p>This is the command I use to plot:</p>
+
+<pre><code>barplot(x,ylab=""Number of Unique Tags"", xlab=""Expected - Observed"")
+</code></pre>
+"
+582653,69117,2009-02-24T17:21:30Z,13,what is the best practice of handling time in R?,"<p>I am working with a survey dataset. It has two string vectors, start and finish, indicating the time of the day when the interview was started, and finished, respectively.</p>
+
+<p>They are character strings that look like: ""9:24 am"", ""12:35 pm"", and so forth. i am trying to calculate the duration of the interview based on these two. what is the best way of doing this?</p>
+
+<p>i know that, for dates, there are lots of classes or functions like <code>as.date()</code>, <code>as.Date()</code>, <code>chron()</code>, or <code>as.POSIXct()</code>. So i was looking for something like <code>as.time()</code>, but could not find it. Should I just append a made-up date and convert the whole thing into a <code>POSIX()</code> date-time class, then use <code>difftime()</code>? </p>
+
+<p>What is the best practice of handling time in R?</p>
+"
+596819,69117,2009-02-27T21:49:17Z,11,What is the best way to avoid passing a data frame around?,"<p>I have 12 data frames to work with. They are similar and I have to do the same processing to each one, so I wrote a function that takes a data frame, processes it, and then returns a data frame. This works. But I am afraid that I am passing around a very big structure. I may be making temporary copies (am I?) This can't be efficient. What is the best way to avoid passing a data frame around? Thank you.</p>
+
+<pre><code>doSomething &lt;- function(df) {
+  // do something with the data frame, df
+  return(df)
+}
+</code></pre>
+"
+596976,69117,2009-02-27T22:45:59Z,0,What is the Y function?,"<p>A friend of mine asked me if I understood the Y function. I didn't even know what it was. <code>? Y</code> did not get me anywhere.</p>
+
+<p>What is it?</p>
+"
+652136,1447,2009-03-16T20:59:36Z,159,How can I remove an element from a list?,"<p>I have a list and I want to remove a single element from it.  How can I do this?</p>
+
+<p>I've tried looking up what I think the obvious names for this function would be in the reference manual and I haven't found anything appropriate.</p>
+"
+657440,67405,2009-03-18T08:59:04Z,7,Cumulative Plot with Given X-Axis,"<p>I have data that looks like this.
+In which I want to plot accumulative value of dat1 with respect
+to x-axis. Also plot it together with dat2.</p>
+
+<pre><code>#x-axis dat1              dat2
+-10     0.0140149       0.0140146
+-9      0.00890835      0.00891768
+-8      0.00672276      0.00672488
+-7      0.00876399      0.00879401
+-6      0.00806879      0.00808141
+-5      0.0088366       0.00885121
+-4      0.00856872      0.00857769
+-3      0.0195384       0.0196094
+-2      0.0160239       0.0161829
+-1      0.0254455       0.0257845
+0       0.0397413       0.0400913
+1       0.0743316       0.0755453
+2       0.0247501       0.0253324
+3       0.0214285       0.021778
+4       0.0241462       0.0244967
+5       0.0150943       0.015241
+6       0.0141398       0.0142373
+7       0.0101515       0.0102948
+8       0.0308843       0.031294
+9       0.0095504       0.00960626
+10      0.00729676      0.0073713
+</code></pre>
+
+<p>What's the common way to do it in R?</p>
+
+<p>I looked at ECDF from Hmisc, it doesn't seem to do what I want.
+In particular it doesn't allow us to give x-axis value.</p>
+"
+659725,37751,2009-03-18T19:21:41Z,5,Column Stores: Comparing Column Based Databases,"<p>I've really been struggling to make SQL Server into something that, quite frankly, it will never be. I need a database engine for my analytical work. The DB needs to be fast and does NOT need all the logging and other overhead found in typical databases (SQL Server, Oracle, DB2, etc.) </p>
+
+<p>Yesterday I listened to <a href=""http://itc.conversationsnetwork.org/shows/detail4009.html"" rel=""noreferrer"">Michael Stonebraker speak at the Money:Tech conference</a> and I kept thinking, ""I'm not really crazy. There IS a better way!"" He talks about using <a href=""http://en.wikipedia.org/wiki/Column-oriented_DBMS"" rel=""noreferrer"">column stores</a> instead of row oriented databases. I went to the Wikipedia page for <a href=""http://en.wikipedia.org/wiki/Column-oriented_DBMS"" rel=""noreferrer"">column stores</a> and I see a few open source projects (which I like) and a few commercial/open source projects (which I don't fully understand). </p>
+
+<p>My question is this: In an applied analytical environment, how do the different column based DB's differ? How should I be thinking about them? Anyone have practical experience with multiple column based systems? Can I leverage my SQL experience with these DBs or am I going to have to learn a new language?</p>
+
+<p>I am ultimately going to be pulling data into R for analysis. </p>
+
+<p><strong>EDIT:</strong> I was requested for some clarification in what exactly I am trying to do. So, here's an example of what I would like to do:
+Create a table that has 4 million rows and 20 columns (5 dims, 15 facts). Create 5 aggregation tables that calculate max, min, and average for each of the facts. Join those 5 aggregations back to the starting table. Now calculate the percent deviation from mean, percent deviation of min, and percent deviation from max for each row and add it to the original table. This table data does not get new rows each day, it gets TOTALLY replaced and the process is repeated. Heaven forbid if the process must be stopped. And the logs... ohhhhh the logs! :)</p>"

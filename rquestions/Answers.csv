@@ -1,0 +1,211 @@
+Id,OwnerUserId,CreationDate,ParentId,Score,IsAcceptedAnswer,Body
+79741,3259,2008-09-17T03:43:22Z,79709,-1,FALSE,"<p>It's tough to say definitively without knowing the language/compiler used.  However, if you can simply pass a pointer/reference to the object that you're creating, then the size of the object itself has nothing to do with the speed of the function calls.  Manipulating this data down the road could be a different story.</p>
+"
+79768,6043,2008-09-17T03:48:29Z,79709,9,FALSE,"<p>use variables in the outer function instead of global variables. This gets you the best of both approaches: you're not mutating global state, and you're not copying a big wad of data. If you have to exit early, just return the partial results.</p>
+
+<p>(See the ""Scope"" section in the R manual: <a href=""http://cran.r-project.org/doc/manuals/R-intro.html#Scope"" rel=""noreferrer"">http://cran.r-project.org/doc/manuals/R-intro.html#Scope</a>)</p>
+"
+79779,8002,2008-09-17T03:49:36Z,79709,0,FALSE,"<p>Third approach: inner function returns a reference to the large array, which the next statement inside the loop then dereferences and stores wherever it's needed (ideally with a single pointer store and not by having to memcopy the entire array).</p>
+
+<p>This gets rid of both the side effect and the passing of large datastructures.</p>
+"
+79788,NA,2008-09-17T03:51:30Z,79709,4,FALSE,"<p>It's not going to make much difference to memory use, so you might as well make the code clean.</p>
+
+<p>Since R has copy-on-modify for variables, modifying the global object will have the same memory implications as passing something up in return values.</p>
+
+<p>If you store the outputs in a database (or even in a file) you won't have the memory use issues, and the data will be incrementally available as it is created, rather than just at the end.  Whether it's faster with the database depends primarily on how much memory you are using: is the reduction is garbage collection going to pay for the cost of writing to disk.</p>
+
+<p>There are both time and memory profilers in R, so you can see empirically what the impacts are.</p>
+"
+79827,14257,2008-09-17T03:58:26Z,79709,1,FALSE,"<p>I'm not sure I understand the question, but I have a couple of solutions.</p>
+
+<ol>
+<li><p>Inside the function, create a list of the vectors and return that.</p></li>
+<li><p>Inside the function, create an environment and store all the vectors inside of that.  Just make sure that you return the environment in case of errors.</p></li>
+</ol>
+
+<p>in R:</p>
+
+<pre><code>help(environment)
+
+# You might do something like this:
+
+outer &lt;- function(datasets) {
+  # create the return environment
+  ret.env &lt;- new.env()
+  for(set in dataset) {
+    tmp &lt;- inner(set)
+    # check for errors however you like here.  You might have inner return a list, and
+    # have the list contain an error component
+    assign(set, tmp, envir=ret.env)
+  }
+  return(ret.env)
+}
+
+#The inner function might be defined like this
+
+inner &lt;- function(dataset) {
+  # I don't know what you are doing here, but lets pretend you are reading a data file
+  # that is named by dataset
+  filedata &lt;- read.table(dataset, header=T)
+  return(filedata)
+}
+</code></pre>
+
+<p>leif</p>
+"
+79893,14928,2008-09-17T04:11:08Z,79709,6,FALSE,"<p>Remember your Knuth.  ""Premature optimization is the root of all programming evil.""</p>
+
+<p>Try the side effect free version.  See if it meets your performance goals.  If it does, great, you don't have a problem in the first place; if it doesn't, then use the side effects, and make a note for the next programmer that your hand was forced.</p>
+"
+83162,15842,2008-09-17T13:27:17Z,77434,70,FALSE,"<p>If you're looking for something as nice as Python's x[-1] notation, I think you're out of luck.  The standard idiom is</p>
+
+<pre><code>x[length(x)]  
+</code></pre>
+
+<p>but it's easy enough to write a function to do this:</p>
+
+<pre><code>last &lt;- function(x) { return( x[length(x)] ) }
+</code></pre>
+
+<p>This missing feature in R annoys me too!</p>
+"
+83222,1428,2008-09-17T13:32:45Z,77434,236,FALSE,"<p>I use the <code>tail()</code> function:</p>
+
+<pre><code>tail(vector, n=1)
+</code></pre>
+
+<p>The nice thing with <code>tail()</code> is that it works on dataframes too, unlike the <code>x[length(x)]</code> idiom.</p>
+"
+86804,NA,2008-09-17T19:39:37Z,79709,1,FALSE,"<p>FYI, here's a full sample toy solution that avoids side effects:</p>
+
+<pre><code>outerfunc &lt;- function(names) {
+  templist &lt;- list()
+  for (aname in names) {
+    templist[[aname]] &lt;- innerfunc(aname)
+  }
+  templist
+}
+
+innerfunc &lt;- function(aname) {
+  retval &lt;- NULL
+  if (""one"" %in% aname) retval &lt;- c(1)
+  if (""two"" %in% aname) retval &lt;- c(1,2)
+  if (""three"" %in% aname) retval &lt;- c(1,2,3)
+  retval
+}
+
+names &lt;- c(""one"",""two"",""three"")
+
+name_vals &lt;- outerfunc(names)
+
+for (name in names) assign(name, name_vals[[name]])
+</code></pre>
+"
+95598,1179,2008-09-18T18:49:09Z,95007,5,FALSE,"<p>There are various ways of computing quantiles when you give it a vector, and don't have a known CDF. </p>
+
+<p>Consider the question of what to do when your observations don't fall on quantiles exactly. </p>
+
+<p>The ""types"" are just determining how to do that. So, the methods say, ""use a linear interpolation between the k-th order statistic and p(k)"".</p>
+
+<p>So, what's p(k)? One guy says, ""well, I like to use k/n"". Another guy says, ""I like to use (k-1)/(n-1)"" etc.  Each of these methods have different properties that are better suited for one problem or another. </p>
+
+<p>The \alpha's and \beta's are just ways to parameterize the functions p. In one case, they're 1 and 1. In another case, they're 3/8 and -1/4. I don't think the p's are ever a constant in the documentation. They just don't always show the dependency explicitly. </p>
+
+<p>See what happens with the different types when you put in vectors like 1:5 and 1:6. </p>
+
+<p>(also note that even if your observations fall exactly on the quantiles, certain types will still use linear interpolation). </p>
+"
+103396,4482,2008-09-19T16:20:30Z,103312,6,FALSE,"<p>The <a href=""http://wiki.r-project.org/rwiki/doku.php?id=rdoc:base:readlines"" rel=""noreferrer"">readLines</a> function will return a zero-length value when it reaches the EOF.</p>
+"
+153852,23813,2008-09-30T16:28:14Z,77434,42,FALSE,"<p>Combining lindelof's and Gregg Lind's ideas:</p>
+
+<pre><code>last &lt;- function(x) { tail(x, n = 1) }
+</code></pre>
+
+<p>Working at the prompt, I usually omit the ""<code>n=</code>"", i.e. <code>tail(x, 1)</code>.</p>
+
+<p>Unlike <code>last</code> from  the <code>pastecs</code> package, <code>head</code> and <code>tail</code> (from <code>utils</code>) work not only on vectors but also on data frames etc., and also can return data ""without first/last n elements"", e.g. </p>
+
+<pre><code>but.last &lt;- function(x) { head(x, n = -1) }
+</code></pre>
+
+<p>(Note that you have to use <code>head</code> for this, instead of <code>tail</code>.)</p>
+"
+255992,23263,2008-11-01T19:29:54Z,255697,2,TRUE,"<p>I've only come across both R and the Dirichlet distribution in passing, so I hope I'm not too much off the mark.</p>
+
+<p><a href=""https://stat.ethz.ch/pipermail/r-help/2006-September/113258.html"" rel=""nofollow noreferrer"">This mailing list message</a> seems to answer your question:</p>
+
+<blockquote>
+  <p>Scrolling through the results of
+  RSiteSearch(""dirichlet"") suggests some useful tools
+  in the VGAM package.  The gtools package and
+  MCMC packages also have ddirichlet() functions
+  that you could use to construct a (negative log) likelihood
+  function and optimize with optim/nlmin/etc.</p>
+</blockquote>
+
+<p>The deal, DPpackage and mix packages also may or may not provide what you need.</p>
+
+<p>Then again, these are all still CRAN packages, so I'm not sure if you already found these and found them unsuitable.</p>
+
+<p>As for searching for R, <a href=""http://www.r-project.org/"" rel=""nofollow noreferrer"">the R project site</a> itself already provides a few links on <a href=""http://www.r-project.org/search.html"" rel=""nofollow noreferrer"">its search page</a>.</p>
+"
+359458,3201,2008-12-11T14:06:56Z,359438,2,FALSE,"<p>I have used <a href=""http://cran.r-project.org/web/packages/linprog/index.html"" rel=""nofollow noreferrer"">linprog</a> for linear problems in the past.</p>
+"
+435942,37751,2009-01-12T16:20:54Z,359438,5,FALSE,"<p>Linprog, mentioned by Galwegian, focuses on linear programming via the simplex algorithm. In addition you may be interested in <a href=""http://cran.r-project.org/web/packages/fPortfolio/"" rel=""noreferrer"">fPortfolio</a> if you are doing portfolio optimization. </p>
+"
+440066,37751,2009-01-13T18:00:54Z,439526,9,TRUE,"<p>Clearly I should have worked on this for another hour before I posted my question. It's so obvious in retrospect. :)</p>
+
+<p>To use R's vector logic I took out the loop and replaced it with this:</p>
+
+<pre><code>st &lt;-   sample(c(12,17,24),10000,prob=c(20,30,50),replace=TRUE)
+p1 &lt;-   sample(c(12,17,24),10000,prob=c(20,30,50),replace=TRUE)
+p2 &lt;-   sample(c(12,17,24),10000,prob=c(20,30,50),replace=TRUE)
+year &lt;- rep(1991:2000,1000)
+</code></pre>
+
+<p>I can now do 100,000 samples almost instantaneous. I knew that vectors were faster, but dang. I presume 100,000 loops would have taken over an hour using a loop and the vector approach takes &lt;1 second. Just for kicks I made the vectors a million. It took ~2 seconds to complete. Since I must test to failure, I tried 10mm but ran out of memory on my 2GB laptop. I switched over to my Vista 64 desktop with 6GB ram and created vectors of length 10mm in 17 seconds. 100mm made things fall apart as one of the vectors was over 763mb which resulted in an allocation issue with R. </p>
+
+<p>Vectors in R are amazingly fast to me. I guess that's why I am an economist and not a computer scientist. </p>
+"
+441029,1447,2009-01-13T22:09:25Z,439526,6,FALSE,"<p>To answer your question about why the loop of 10000 took much longer than your loop of 1000:</p>
+
+<p>I think the primary suspect is the concatenations that are happening every loop.  As the data gets longer R is probably copying every element of the vector into a new vector that is one longer.  Copying a small (500 elements on average) data set 1000 times is fast.  Copying a larger (5000 elements on average) data set 10000 times is slower.</p>
+"
+451800,54904,2009-01-16T20:12:55Z,445059,0,FALSE,"<p>This is no answer, but I wonder if any insight lies in this direction:</p>
+
+<pre><code>&gt; tapply((my.data$item[my.data$fixed==0])[-1], my.data$year[my.data$fixed==0][-1], sum)
+</code></pre>
+
+<p>tapply produces a table of statistics (sums, in this case; the third argument) grouped by the parameter given as the second argument. For example</p>
+
+<pre><code>2001 2003 2005 2007
+1    3    5    7
+</code></pre>
+
+<p>The [-1] notation drops observation (row) one from the selected rows. So, you could loop and use [-i] on each loop</p>
+
+<pre><code>for (i in 1:length(my.data$item)) {
+  tapply((my.data$item[my.data$fixed==0])[-i], my.data$year[my.data$fixed==0][-i], sum)
+}
+</code></pre>
+
+<p>keeping in mind that if you have any years with only 1 observation, then the tables returned by the successive tapply calls won't have the same number of columns. (i.e., if you drop out the only observation for 2001, then 2003, 2005, and 2007 would be te only columns returned).</p>
+"
+455286,54904,2009-01-18T15:12:24Z,445059,7,TRUE,"<p>Here's what seems like another very R-type way to generate the sums. Generate a vector that is as long as your input vector, containing nothing but the repeated sum of n elements. Then, subtract your original vector from the sums vector. The result: a vector (isums) where each entry is your original vector less the ith element.</p>
+
+<pre><code>&gt; (my.data$item[my.data$fixed==0])
+[1] 1 1 3 5 7
+&gt; sums &lt;- rep(sum(my.data$item[my.data$fixed==0]),length(my.data$item[my.data$fixed==0]))
+&gt; sums
+[1] 17 17 17 17 17
+&gt; isums &lt;- sums - (my.data$item[my.data$fixed==0])
+&gt; isums
+[1] 16 16 14 12 10
+</code></pre>
+"
+467131,57626,2009-01-21T21:38:10Z,467110,12,TRUE,"<p>In most cases R is an interpreted language that runs in a read-evaluate-print loop.  There are numerous extensions to R that are written in other languages like C and Fortran where speed or interfacing with native libraries is helpful. </p>
+"
+467561,25188,2009-01-21T23:54:03Z,467110,6,FALSE,"<p>I've often rewritten R code in C++ and made it run 100x faster.  Looping is especially inefficient in R.  </p>
+"
