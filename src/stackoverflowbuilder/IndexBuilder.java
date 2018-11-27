@@ -253,6 +253,7 @@ public final class IndexBuilder {
             writer.commit();
             // Cerramos el IndexWriter
             writer.close();
+            // Cerramos el DirectoryTaxonomyWriter
             fwriter.close();
         } catch (IOException e){
             System.out.println("Error closing index " + e);
