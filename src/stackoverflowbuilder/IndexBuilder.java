@@ -83,14 +83,16 @@ public final class IndexBuilder {
 
         this.ana = new PerFieldAnalyzerWrapper( new WhitespaceAnalyzer(), analyzerPerField);
         
-        // Creamos el índice 
+        // Creamos el índice
         this.createIndex();
+        System.out.print("Índice creado \n");
         
         // Añadimos los documentos
         this.indexDocuments(ruta_preguntas, ruta_respuestas, ruta_etiquetas);
         
         // Cerramos el índice
         this.close();
+        System.out.print("Índice construido \n");
     }
     
     public void createIndex() throws IOException {
@@ -151,8 +153,6 @@ public final class IndexBuilder {
         }
         
         csvreader.close(); // Cerramos csv
-
-        System.out.println(this.etiquetas);
         
         // PREGUNTAS
         
@@ -199,6 +199,8 @@ public final class IndexBuilder {
         
         csvreader.close(); // Cerramos csv
         
+        System.out.print("Preguntas indexadas \n");
+        
         // RESPUESTAS
         
         // Abro csv para extraer preguntas
@@ -244,6 +246,8 @@ public final class IndexBuilder {
         }
         
         csvreader.close(); // Cerramos csv
+        
+        System.out.print("Respuestas indexadas \n");
     
     }
 
