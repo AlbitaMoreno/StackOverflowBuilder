@@ -22,7 +22,8 @@ import org.apache.lucene.analysis.miscellaneous.PerFieldAnalyzerWrapper;
 import org.apache.lucene.analysis.core.StopAnalyzer;
 import org.apache.lucene.document.Document;
 import org.apache.lucene.document.Field;
-import org.apache.lucene.document.IntPoint;
+import org.apache.lucene.document.NumericDocValuesField;
+import org.apache.lucene.document.StoredField;
 import org.apache.lucene.document.StringField;
 import org.apache.lucene.document.TextField;
 import org.apache.lucene.facet.FacetField;
@@ -75,11 +76,9 @@ public final class IndexBuilder {
         };
         
         // Creamos analizador por campo       
-        analyzerPerField.put("Title_q", new StopAnalyzer());
-        analyzerPerField.put("Body_q", new StopAnalyzer());
-        analyzerPerField.put("Body_a", new StopAnalyzer());
-        analyzerPerField.put("Code_q", this.RcodeAnalyzer);
-        analyzerPerField.put("Code_a", this.RcodeAnalyzer);
+        analyzerPerField.put("Title", new StopAnalyzer());
+        analyzerPerField.put("Body", new StopAnalyzer());
+        analyzerPerField.put("Code", this.RcodeAnalyzer);
 
         this.ana = new PerFieldAnalyzerWrapper( new WhitespaceAnalyzer(), analyzerPerField);
         
@@ -105,7 +104,8 @@ public final class IndexBuilder {
         // Configuramos índice al cual le vamos a pasar el StandardAnalyzer
         IndexWriterConfig config = new IndexWriterConfig(ana);
         config.setSimilarity(similarity); // Usamos como medida de similitud el Okapi BM25
-        config.setOpenMode(OpenMode.CREATE); // Configuramos el índice de forma que se cree un índice cada vez que se ejecute esta función
+        config.setOpenMode(OpenMode.CREATE); // Configuramos el índice de forma que se cree un índice si no 
+                                                       // está creado, si está creado simplemente se añaden los nuevos documentos
         
         // Configuramos facetas
         fconfig = new FacetsConfig(); 
@@ -118,9 +118,6 @@ public final class IndexBuilder {
         
         fconfig.setMultiValued("etiqueta", true); // Indicamos que la faceta etiqueta puede contener varios valores
         fconfig.setHierarchical("fecha", true); // Creamos una jerarquía para la faceta fecha
-        
-        // Creamos un nuevo índice
-        config.setOpenMode(OpenMode.CREATE);
         
         // Construimos IndexWriter con los parámetros dados en config
         writer = new IndexWriter(dir, config); 
@@ -166,18 +163,21 @@ public final class IndexBuilder {
             Document doc = new Document();
             
             // Incluimos los campos a indexar
-            doc.add(new StringField("Id_q", d[0],Field.Store.YES));
-            doc.add(new StringField("OwnerUserId_q", d[1],Field.Store.YES));
-            doc.add(new StringField("CreationDate_q", d[2],Field.Store.YES));
-            doc.add(new IntPoint("Score_q", Integer.parseInt(d[3])));
-            doc.add(new TextField("Title_q", d[4],Field.Store.YES));
-            doc.add(new TextField("Body_q", d[5],Field.Store.YES));
+            doc.add(new StringField("Id", d[0],Field.Store.YES));
+            doc.add(new StringField("OwnerUserId", d[1],Field.Store.YES));
+            doc.add(new StringField("CreationDate", d[2],Field.Store.YES));
+            doc.add(new TextField("Title", d[4],Field.Store.YES));
+            doc.add(new TextField("Body", d[5],Field.Store.YES));
+            
+            // Este campo lo almacenamos y lo creamos como campo de ordenación
+            doc.add(new NumericDocValuesField("Score", Integer.parseInt(d[3])));
+            doc.add(new StoredField("Score", Integer.parseInt(d[3])));
             
             org.jsoup.nodes.Document code = Jsoup.parse(d[5]);
             
             for (Element e : code.getAllElements()){
               if(e.tagName().equals("code")){
-                  doc.add(new TextField("Code_q", e.text(),Field.Store.YES));
+                  doc.add(new TextField("Code", e.text(),Field.Store.YES));
               }  
             }
             
@@ -212,19 +212,22 @@ public final class IndexBuilder {
         while((d = csvreader.readNext()) != null) {  
             Document doc = new Document();
                       
-            doc.add(new StringField("Id_a", d[0],Field.Store.YES));
-            doc.add(new StringField("OwnerUserId_a", d[1],Field.Store.YES));
-            doc.add(new StringField("CreationDate_a", d[2],Field.Store.YES));
-            doc.add(new TextField("ParentId_a", d[4],Field.Store.NO));
-            doc.add(new IntPoint("Score_a", Integer.parseInt(d[3])));
-            doc.add(new TextField("IsAcceptedAnswer_a", d[5],Field.Store.YES));            
-            doc.add(new TextField("Body_a", d[6],Field.Store.YES));
+            doc.add(new StringField("Id", d[0],Field.Store.YES));
+            doc.add(new StringField("OwnerUserId", d[1],Field.Store.YES));
+            doc.add(new StringField("CreationDate", d[2],Field.Store.YES));
+            doc.add(new TextField("ParentId", d[3],Field.Store.NO));
+            doc.add(new TextField("IsAcceptedAnswer", d[5],Field.Store.YES));            
+            doc.add(new TextField("Body", d[6],Field.Store.YES));
+            
+            // Este campo lo almacenamos y lo creamos como campo de ordenación
+            doc.add(new NumericDocValuesField("Score", Integer.parseInt(d[4])));
+            doc.add(new StoredField("Score", Integer.parseInt(d[4])));
             
             org.jsoup.nodes.Document code = Jsoup.parse(d[5]);
             
             for (Element e : code.getAllElements()){
               if(e.tagName().equals("code")){
-                    doc.add(new TextField("Code_a", e.text(),Field.Store.YES));
+                    doc.add(new TextField("Code", e.text(),Field.Store.YES));
               }  
             }          
             
