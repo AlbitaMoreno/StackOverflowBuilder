@@ -8,6 +8,17 @@
 <!-- You can turn off the Compile on Save (or Deploy on Save) setting -->
 <!-- in the project's Project Properties dialog box.-->
 <project name="StackOverflowBuilder" default="default" basedir=".">
+    <target name="-post-jar">
+        <jar jarfile="${dist.jar}" update="true">
+            <zipfileset src="lib/commons-lang3-3.6.jar"/>
+            <zipfileset src="lib/jsoup-1.11.3.jar"/>
+            <zipfileset src="lib/lucene-analyzers-common-7.5.0.jar"/>
+            <zipfileset src="lib/lucene-core-7.5.0.jar"/>
+            <zipfileset src="lib/lucene-facet-7.5.0.jar"/>
+            <zipfileset src="lib/opencsv-4.1.jar"/>
+        </jar>
+    </target>
+    
     <description>Builds, tests, and runs the project StackOverflowBuilder.</description>
     <import file="nbproject/build-impl.xml"/>
     <!--
