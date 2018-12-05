@@ -105,16 +105,10 @@ public final class IndexBuilder {
         IndexWriterConfig config = new IndexWriterConfig(ana);
         config.setSimilarity(similarity); // Usamos como medida de similitud el Okapi BM25
         config.setOpenMode(OpenMode.CREATE); // Configuramos el índice de forma que se cree un índice si no 
-                                                       // está creado, si está creado simplemente se añaden los nuevos documentos
+                                             // está creado, si está creado simplemente se añaden los nuevos documentos
         
         // Configuramos facetas
         fconfig = new FacetsConfig(); 
-        
-        fconfig.setIndexFieldName("es_pregunta","facet_es_pregunta"); // La faceta es_pregunta la gestiona dentro del facet_es_pregunta
-        fconfig.setIndexFieldName("fecha","facet_fecha"); // La faceta fecha la gestiona dentro del facet_fecha
-        fconfig.setIndexFieldName("respuesta_aceptada","facet_respuesta_aceptada"); // La faceta respuesta_aceptada la gestiona dentro del facet_respuesta_aceptada
-        fconfig.setIndexFieldName("puntuacion", "facet_puntuacion"); // La faceta puntuacion la gestiona dentro del facet_puntuacion
-        fconfig.setIndexFieldName("etiqueta", "facet_etiqueta"); // La faceta etiqueta la gestiona dentro del facet_etiqueta
         
         fconfig.setMultiValued("etiqueta", true); // Indicamos que la faceta etiqueta puede contener varios valores
         fconfig.setHierarchical("fecha", true); // Creamos una jerarquía para la faceta fecha
@@ -158,9 +152,14 @@ public final class IndexBuilder {
         csvreader = new CSVReader(reader);
         
         csvreader.readNext(); // Evito hacer un documento con la columna de los nombres de los campos
+
+        int cont = 0;
         
         while((d = csvreader.readNext()) != null) {
             Document doc = new Document();
+            
+            System.out.println(d[0] + " " + d[1] + " " + cont + "\n");
+            cont++; 
             
             // Incluimos los campos a indexar
             doc.add(new StringField("Id", d[0],Field.Store.YES));
@@ -209,8 +208,13 @@ public final class IndexBuilder {
         
         csvreader.readNext(); // Evito hacer un documento con la columna de los nombres de los campos
         
+        cont = 0;
+        
         while((d = csvreader.readNext()) != null) {  
             Document doc = new Document();
+            
+            System.out.println(d[0] + " " + d[1] + " " + d[3] + " " + cont + "\n");
+            cont++; 
                       
             doc.add(new StringField("Id", d[0],Field.Store.YES));
             doc.add(new StringField("OwnerUserId", d[1],Field.Store.YES));
